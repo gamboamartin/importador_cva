@@ -1,5 +1,5 @@
 {
-  "name": "gamboa.martin/importador",
+  "name": "gamboa.martin/importador_cva",
   "description": "Importa datos entre paquetes",
   "type": "library",
   "license": "GPL-3.0-or-later",
@@ -12,12 +12,12 @@
 
     "autoload": {
         "psr-4": {
-          "gamboamartin\\importador\\controllers\\": "controllers",
-          "gamboamartin\\importador\\models\\": "orm",
+          "gamboamartin\\importador_cva\\controllers\\": "controllers",
+          "gamboamartin\\importador_cva\\models\\": "orm",
           "config\\": "config/",
           "links\\": "links/",
-          "gamboamartin\\importador\\tests\\": "tests/",
-          "gamboamartin\\importador\\html\\": "templates/directivas/"
+          "gamboamartin\\importador_cva\\tests\\": "tests/",
+          "gamboamartin\\importador_cva\\html\\": "templates/directivas/"
 
         }
     },
