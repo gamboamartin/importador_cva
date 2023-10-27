@@ -1,15 +1,11 @@
 <?php
-namespace gamboamartin\importador\controllers;
+namespace gamboamartin\importador_cva\controllers;
 
 use base\orm\estructuras;
 use base\orm\modelo;
 use base\orm\modelo_base;
 use gamboamartin\errores\errores;
-use gamboamartin\importador\html\adm_tipo_dato_html;
-use gamboamartin\importador\html\imp_database_html;
-use gamboamartin\importador\models\_conexion;
 use gamboamartin\importador\models\adm_seccion;
-use gamboamartin\importador\models\imp_database;
 use gamboamartin\template_1\html;
 use html\adm_seccion_html;
 use PDO;
