@@ -12,15 +12,14 @@ class cva_lista_precio extends _modelo_parent{
     public function __construct(PDO $link)
     {
         $tabla = 'cva_lista_precio';
-        $columnas = array($tabla=>false,'inm_concepto'=>$tabla,'inm_ubicacion'=>$tabla,
-            'inm_tipo_concepto'=>'inm_concepto');
+        $columnas = array($tabla=>false);
 
-        $campos_obligatorios = array('inm_concepto_id','inm_ubicacion_id','monto','fecha','referencia');
+        $campos_obligatorios = array();
 
         $columnas_extra= array();
         $renombres= array();
 
-        $atributos_criticos = array('inm_ubicacion_id','inm_concepto_id','monto','fecha','referencia');
+        $atributos_criticos = array();
 
         parent::__construct(link: $link, tabla: $tabla, campos_obligatorios: $campos_obligatorios,
             columnas: $columnas, columnas_extra: $columnas_extra, renombres: $renombres,
