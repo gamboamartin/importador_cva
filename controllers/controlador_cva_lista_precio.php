@@ -201,56 +201,12 @@ class controlador_cva_lista_precio extends _ctl_base {
 
     public function obten_productos(bool $header, bool $ws = false){
 
-        $generales = new generales();
-
-        $archivo_xml = $this->obten_archivo_xml_cva(cliente: $generales->cliente_cva, url: $generales->url_cva, marca: 'HP');
-        if(errores::$error){
-            return $this->errores->error(mensaje: 'Error al maquetar key_selects',data:  $archivo_xml);
-        }
-
-        $xml = simplexml_load_string($archivo_xml);
-        $json  = json_encode($xml);
-        $xmlArr = json_decode($json, true);
-
-        $keys = array("clave","codigo_fabricante","descripcion","solucion","grupo","marca","garantia","clase",
-            "disponible","precio","moneda","ficha_tecnica","ficha_comercial","imagen","disponibleCD");
-
-        $registros = array();
-        foreach ($xmlArr['item'] as $reg){
-            foreach ($keys as $key){
-                if(is_array($reg[$key])){
-                    $reg[$key] = '';
-                }
-            }
-            $registros[] = $reg;
-        }
-
-        $nombre_hojas[] = 'Registros';
-        $keys_hojas['Registros'] = new stdClass();
-        $keys_hojas['Registros']->keys = $keys;
-        $keys_hojas['Registros']->registros = $registros;
-
-        $xls = (new exportador())->genera_xls(header: $header,name:  $this->seccion,nombre_hojas:  $nombre_hojas,
-            keys_hojas: $keys_hojas, path_base: $this->path_base);
+        $xls = (new cva_lista_precio($this->link))->obten_productos(header: $header,path_base:$this->path_base,seccion: $this->seccion);
         if(errores::$error){
             return $this->retorno_error(mensaje: 'Error al obtener xls',data:  $xls, header: $header, ws: $ws);
         }
 
         return false;
-    }
-
-    public function obten_archivo_xml_cva(string $cliente, string $url, string $clave = '%', string $codigo = '%',
-                                          string $grupo = '%', string $marca = '%'){
-        $fields = array('cliente' => $cliente, 'marca' => $marca, 'grupo' => $grupo, 'clave', $clave,
-            'codigo', $codigo);
-        $fields_string = http_build_query($fields);
-
-        $xml = file_get_contents($url."?".$fields_string);
-        if($xml === false){
-            return $this->errores->error(mensaje: 'Error al maquetar key_selects',data:  $fields_string);
-        }
-
-        return $xml;
     }
 
 }
