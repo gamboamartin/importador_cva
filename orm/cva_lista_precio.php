@@ -31,19 +31,41 @@ class cva_lista_precio extends _modelo_parent{
         $this->etiqueta = 'Costo Ubicaciones';
     }
 
-    public function obten_productos(bool $header, string $path_base, string $seccion){
-
-        $generales = new generales();
-
-        $archivo_xml = $this->obten_archivo_xml_cva(cliente: $generales->cliente_cva, url: $generales->url_cva,
-            /*clave:"FR-1856",*/ marca: 'HP');
+    public function genera_arreglo_bruto($cliente_cva, $url_cva, string $clave = '%', string $codigo = '%',
+                                         string $grupo = '%', string $marca = '%'){
+        $archivo_xml = $this->obten_archivo_xml_cva(cliente:$cliente_cva, url: $url_cva,clave: $clave,codigo: $codigo,
+            grupo: $grupo,marca: $marca);
         if(errores::$error){
             return $this->error->error(mensaje: 'Error al maquetar key_selects',data:  $archivo_xml);
         }
 
         $xml = simplexml_load_string($archivo_xml);
         $json  = json_encode($xml);
-        $xmlArr = json_decode($json, true);
+
+        return json_decode($json, true);
+    }
+    public function obten_archivo_xml_cva(string $cliente, string $url, string $clave = '%', string $codigo = '%',
+                                          string $grupo = '%', string $marca = '%'){
+        $fields = array('cliente' => $cliente, 'marca' => $marca, 'grupo' => $grupo, 'clave' => $clave,
+            'codigo' => $codigo);
+        $fields_string = http_build_query($fields);
+
+        $xml = file_get_contents($url."?".$fields_string);
+        if($xml === false){
+            return $this->error->error(mensaje: 'Error al maquetar key_selects',data:  $fields_string);
+        }
+
+        return $xml;
+    }
+
+    public function obten_productos(bool $header, string $path_base, string $seccion){
+
+        $generales = new generales();
+
+        $xmlArr = $this->genera_arreglo_bruto(cliente_cva: $generales->cliente_cva, url_cva: $generales->url_cva);
+        if(errores::$error){
+            return $this->error->error(mensaje: 'Error generar arreglo bruto',data:  $xmlArr);
+        }
 
         if(count($xmlArr)>0) {
             $keys = array("clave", "codigo_fabricante", "descripcion", "solucion", "grupo", "marca", "garantia", "clase",
@@ -80,22 +102,8 @@ class cva_lista_precio extends _modelo_parent{
             if (errores::$error) {
                 return $this->error->error(mensaje: 'Error al obtener xls', data: $xls);
             }
-            print_r($xls);exit;
         }
         return false;
     }
 
-    public function obten_archivo_xml_cva(string $cliente, string $url, string $clave = '%', string $codigo = '%',
-                                          string $grupo = '%', string $marca = '%'){
-        $fields = array('cliente' => $cliente, 'marca' => $marca, 'grupo' => $grupo, 'clave' => $clave,
-            'codigo' => $codigo);
-        $fields_string = http_build_query($fields);
-
-        $xml = file_get_contents($url."?".$fields_string);
-        if($xml === false){
-            return $this->error->error(mensaje: 'Error al maquetar key_selects',data:  $fields_string);
-        }
-
-        return $xml;
-    }
 }
