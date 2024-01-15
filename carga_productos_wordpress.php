@@ -50,6 +50,7 @@ foreach ($registros as $item){
 $products = $woocommerce->get('products/?sku='. $param_sku);
 
 $item_data = array();
+$grupos = array();
 foreach ($registros as $item) {
     $sku = $item['clave'];
     $search_item = array_filter((array)$products, function ($item) use ($sku) {
@@ -59,6 +60,10 @@ foreach ($registros as $item) {
     $search_item = reset($search_item);
 
     if(empty($search_item)){
+        if(count($item_data) === 100){
+            $grupos[]= $item_data;
+            $item_data = array();
+        }
         $item_data[] = [
             'sku' => $item['clave'],
             'name' => $item['descripcion'],
@@ -73,16 +78,18 @@ foreach ($registros as $item) {
         ];
     }
 }
+$grupos[]= $item_data;
 
-$data = [
-    'create' => $item_data,
-];
+foreach ($grupos as $grupo) {
+    $data = [
+        'create' => $grupo,
+    ];
+    echo "Actualización en lote ... \n";
+    $result = $woocommerce->post('products/batch', $data);
 
-echo "Actualización en lote ... \n";
-$result = $woocommerce->post('products/batch', $data);
-
-if (!$result) {
-    echo("Error al actualizar productos \n");
-} else {
-    print("Productos actualizados correctamente \n");
+    if (!$result) {
+        echo("Error al actualizar productos \n");
+    } else {
+        print("Productos actualizados correctamente \n");
+    }
 }
