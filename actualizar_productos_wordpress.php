@@ -52,7 +52,6 @@ $products = $woocommerce->get('products/?sku='. $param_sku);
 $item_data = [];
 foreach($products as $product){
 
-    // Filtramos el array de origen por sku
     $sku = $product->sku;
     $search_item = array_filter($registros, function($item) use($sku) {
         return $item['clave'] == $sku;
@@ -60,26 +59,22 @@ foreach($products as $product){
 
     $search_item = reset($search_item);
 
-    // Formamos el array a actualizar
     $item_data[] = [
         'id' => $product->id,
         'regular_price' => $search_item['precio'],
         'stock_quantity' => $search_item['disponible'],
     ];
-
 }
 
-// Construimos información a actualizar en lotes
 $data = [
     'update' => $item_data,
 ];
 
-echo "➜ Actualización en lote ... \n";
-// Actualización en lotes
+echo "Actualización en lote ... \n";
 $result = $woocommerce->post('products/batch', $data);
 
-if (! $result) {
-    echo("❗Error al actualizar productos \n");
+if (!$result) {
+    echo("Error al actualizar productos \n");
 } else {
-    print("✔ Productos actualizados correctamente \n");
+    print("Productos actualizados correctamente \n");
 }
