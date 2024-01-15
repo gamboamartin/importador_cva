@@ -39,10 +39,14 @@ class cva_lista_precio extends _modelo_parent{
             return $this->error->error(mensaje: 'Error al maquetar key_selects',data:  $archivo_xml);
         }
 
-        $xml = simplexml_load_string($archivo_xml);
-        $json  = json_encode($xml);
+        $xmlArr = array();
+        if(trim($archivo_xml) !== '') {
+            $xml = simplexml_load_string($archivo_xml);
+            $json = json_encode($xml);
+            $xmlArr = json_decode($json, true);
+        }
 
-        return json_decode($json, true);
+        return $xmlArr;
     }
     public function obten_archivo_xml_cva(string $cliente, string $url, string $clave = '%', string $codigo = '%',
                                           string $grupo = '%', string $marca = '%'){
