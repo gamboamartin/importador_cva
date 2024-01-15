@@ -28,7 +28,7 @@ $_SESSION['session_id'] = mt_rand(10000000,99999999);
 $_GET['session_id'] = $_SESSION['session_id'];
 
 $xmlArr = $cva_lista_precio_modelo->genera_arreglo_bruto(cliente_cva: $generales->cliente_cva,
-    url_cva: $generales->url_cva);
+    url_cva: $generales->url_cva,marca: 'HP');
 if(errores::$error){
     $error = (new errores())->error(mensaje: 'Error',data:  $xmlArr);
     print_r($error);
@@ -63,6 +63,7 @@ foreach($products as $product){
         'id' => $product->id,
         'regular_price' => $search_item['precio'],
         'stock_quantity' => $search_item['disponible'],
+        'images' => array('src'=>$search_item['imagen'])
     ];
 }
 

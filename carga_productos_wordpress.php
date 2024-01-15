@@ -74,7 +74,7 @@ foreach ($registros as $item) {
             'downloads' => array(),
             'categories' => array(0=>$item['grupo']),
             'stock_quantity' => $item['disponible'],
-            'imagen' => array('src'=>$item['imagen'])
+            'images' => array('src'=>$item['imagen'])
         ];
     }
 }
