@@ -18,7 +18,7 @@ $_SESSION['session_id'] = mt_rand(10000000,99999999);
 $_GET['session_id'] = $_SESSION['session_id'];
 
 
-$obtener_archivo = $cva_lista_precio_modelo->obten_productos(header: false,path_base: $generales->path_base,
+$obtener_archivo = $cva_lista_precio_modelo->obten_productos(header: true,path_base: $generales->path_base,
     seccion: 'cva_lista_precio');
 if(errores::$error){
     $error = (new errores())->error(mensaje: 'Error',data:  $obtener_archivo);

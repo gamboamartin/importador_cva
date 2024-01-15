@@ -35,7 +35,8 @@ class cva_lista_precio extends _modelo_parent{
 
         $generales = new generales();
 
-        $archivo_xml = $this->obten_archivo_xml_cva(cliente: $generales->cliente_cva, url: $generales->url_cva,marca: "HP");
+        $archivo_xml = $this->obten_archivo_xml_cva(cliente: $generales->cliente_cva, url: $generales->url_cva,
+            /*clave:"FR-1856",*/ marca: 'HP');
         if(errores::$error){
             return $this->error->error(mensaje: 'Error al maquetar key_selects',data:  $archivo_xml);
         }
@@ -44,37 +45,50 @@ class cva_lista_precio extends _modelo_parent{
         $json  = json_encode($xml);
         $xmlArr = json_decode($json, true);
 
-        $keys = array("clave","codigo_fabricante","descripcion","solucion","grupo","marca","garantia","clase",
-            "disponible","precio","moneda","ficha_tecnica","ficha_comercial","imagen","disponibleCD");
+        if(count($xmlArr)>0) {
+            $keys = array("clave", "codigo_fabricante", "descripcion", "solucion", "grupo", "marca", "garantia", "clase",
+                "disponible", "precio", "moneda", "ficha_tecnica", "ficha_comercial", "imagen", "disponibleCD");
 
-        $registros = array();
-        foreach ($xmlArr['item'] as $reg){
-            foreach ($keys as $key){
-                if(is_array($reg[$key])){
-                    $reg[$key] = '';
+            $registros = array();
+            if(isset($xmlArr['item'][0])) {
+                foreach ($xmlArr['item'] as $reg) {
+                    foreach ($keys as $key) {
+                        if (is_array($reg[$key])) {
+                            $reg[$key] = '';
+                        }
+                    }
+                    $registros[] = $reg;
                 }
+            }else{
+                $temp = array();
+                foreach ($xmlArr['item'] as $campo => $valor) {
+                    if (is_array($xmlArr['item'][$campo])) {
+                        $valor = '';
+                    }
+                    $temp[$campo] = $valor;
+                }
+                $registros[]= $temp;
             }
-            $registros[] = $reg;
+
+            $nombre_hojas[] = 'Registros';
+            $keys_hojas['Registros'] = new stdClass();
+            $keys_hojas['Registros']->keys = $keys;
+            $keys_hojas['Registros']->registros = $registros;
+
+            $xls = (new exportador())->genera_xls(header: $header, name: $seccion, nombre_hojas: $nombre_hojas,
+                keys_hojas: $keys_hojas, path_base: $path_base);
+            if (errores::$error) {
+                return $this->error->error(mensaje: 'Error al obtener xls', data: $xls);
+            }
+            print_r($xls);exit;
         }
-
-        $nombre_hojas[] = 'Registros';
-        $keys_hojas['Registros'] = new stdClass();
-        $keys_hojas['Registros']->keys = $keys;
-        $keys_hojas['Registros']->registros = $registros;
-
-        $xls = (new exportador())->genera_xls(header: $header,name:  $seccion,nombre_hojas:  $nombre_hojas,
-            keys_hojas: $keys_hojas, path_base: $path_base);
-        if(errores::$error){
-            return $this->error->error(mensaje: 'Error al obtener xls',data:  $xls);
-        }
-
         return false;
     }
 
     public function obten_archivo_xml_cva(string $cliente, string $url, string $clave = '%', string $codigo = '%',
                                           string $grupo = '%', string $marca = '%'){
-        $fields = array('cliente' => $cliente, 'marca' => $marca, 'grupo' => $grupo, 'clave', $clave,
-            'codigo', $codigo);
+        $fields = array('cliente' => $cliente, 'marca' => $marca, 'grupo' => $grupo, 'clave' => $clave,
+            'codigo' => $codigo);
         $fields_string = http_build_query($fields);
 
         $xml = file_get_contents($url."?".$fields_string);
