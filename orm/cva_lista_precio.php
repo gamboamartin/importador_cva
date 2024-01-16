@@ -18,17 +18,10 @@ class cva_lista_precio extends _modelo_parent{
 
         $campos_obligatorios = array();
 
-        $columnas_extra= array();
-        $renombres= array();
-
-        $atributos_criticos = array();
-
         parent::__construct(link: $link, tabla: $tabla, campos_obligatorios: $campos_obligatorios,
-            columnas: $columnas, columnas_extra: $columnas_extra, renombres: $renombres,
-            atributos_criticos: $atributos_criticos);
+            columnas: $columnas);
 
         $this->NAMESPACE = __NAMESPACE__;
-        $this->etiqueta = 'Costo Ubicaciones';
     }
 
     public function genera_arreglo_bruto($cliente_cva, $url_cva, string $clave = '%', string $codigo = '%',

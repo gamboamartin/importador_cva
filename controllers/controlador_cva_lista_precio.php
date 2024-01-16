@@ -8,6 +8,7 @@
  */
 namespace gamboamartin\importador_cva\controllers;
 
+use base\controller\controler;
 use base\controller\init;
 use config\generales;
 use gamboamartin\errores\errores;
@@ -38,47 +39,37 @@ class controlador_cva_lista_precio extends _ctl_base {
 
         parent::__construct(html:$html_, link: $link,modelo:  $modelo, obj_link: $obj_link, datatables: $datatables,
             paths_conf: $paths_conf);
+
+        $configuraciones = $this->init_configuraciones();
+        if (errores::$error) {
+            $error = $this->errores->error(mensaje: 'Error al inicializar configuraciones', data: $configuraciones);
+            print_r($error);
+            die('Error');
+        }
+
+        $this->lista_get_data = true;
     }
 
     public function alta(bool $header, bool $ws = false): array|string
     {
-        $r_alta = $this->alta(header: $header,ws: $ws);
-        if(errores::$error){
-            return $this->retorno_error(
-                mensaje: 'Error al inicializar alta',data:  $r_alta, header: $header,ws:  $ws);
+        $r_alta = $this->init_alta();
+        if (errores::$error) {
+            return $this->retorno_error(mensaje: 'Error al inicializar alta', data: $r_alta, header: $header, ws: $ws);
         }
-        $this->row_upd->inm_ubicacion_id = -1;
-        $this->row_upd->inm_concepto_id = -1;
-        $this->row_upd->fecha = date('Y-m-d');
+
         $keys_selects = array();
-
-        $keys_selects = $this->key_select(cols:12, con_registros: true,filtro:  array(), key: 'inm_ubicacion_id',
-            keys_selects: $keys_selects, id_selected: $this->row_upd->inm_ubicacion_id, label: 'Ubicacion');
-        if(errores::$error){
-            return $this->errores->error(mensaje: 'Error al maquetar key_selects',data:  $keys_selects);
+        $keys_selects = $this->key_selects_txt(keys_selects: $keys_selects);
+        if (errores::$error) {
+            return $this->retorno_error(mensaje: 'Error al inicializar selects', data: $keys_selects, header: $header,
+                ws: $ws);
         }
-
-        $keys_selects = $this->key_select(cols:12, con_registros: true,filtro:  array(), key: 'inm_concepto_id',
-            keys_selects: $keys_selects, id_selected: $this->row_upd->inm_concepto_id, label: 'Concepto');
-        if(errores::$error){
-            return $this->errores->error(mensaje: 'Error al maquetar key_selects',data:  $keys_selects);
-        }
-
 
         $inputs = $this->inputs(keys_selects: $keys_selects);
-        if(errores::$error){
+        if (errores::$error) {
             return $this->retorno_error(
-                mensaje: 'Error al obtener inputs',data:  $inputs, header: $header,ws:  $ws);
+                mensaje: 'Error al obtener inputs', data: $inputs, header: $header, ws: $ws);
         }
 
-        $fecha = $this->html->input_fecha(cols: 4,row_upd:  $this->row_upd,value_vacio:  false,
-            value: $this->row_upd->fecha);
-        if(errores::$error){
-            return $this->retorno_error(
-                mensaje: 'Error al obtener input fecha',data:  $fecha, header: $header,ws:  $ws);
-        }
-
-        $this->inputs->fecha = $fecha;
 
         return $r_alta;
     }
@@ -86,12 +77,10 @@ class controlador_cva_lista_precio extends _ctl_base {
     protected function campos_view(): array
     {
         $keys = new stdClass();
-        $keys->inputs = array('descripcion','monto','fecha','referencia');
+        $keys->inputs = array('descripcion','total_registros','registro_actual','codigo','clave','grupo','marca');
         $keys->selects = array();
 
         $init_data = array();
-        $init_data['inm_concepto'] = "gamboamartin\\inmuebles";
-        $init_data['inm_ubicacion'] = "gamboamartin\\inmuebles";
 
         $campos_view = $this->campos_view_base(init_data: $init_data,keys:  $keys);
 
@@ -115,17 +104,10 @@ class controlador_cva_lista_precio extends _ctl_base {
         }
 
         $keys_selects = array();
-
-        $keys_selects = $this->key_select(cols:12, con_registros: true,filtro:  array(), key: 'inm_ubicacion_id',
-            keys_selects: $keys_selects, id_selected: $this->row_upd->inm_ubicacion_id, label: 'Ubicacion');
-        if(errores::$error){
-            return $this->errores->error(mensaje: 'Error al maquetar key_selects',data:  $keys_selects);
-        }
-
-        $keys_selects = $this->key_select(cols:12, con_registros: true,filtro:  array(), key: 'inm_concepto_id',
-            keys_selects: $keys_selects, id_selected: $this->row_upd->inm_concepto_id, label: 'Concepto');
-        if(errores::$error){
-            return $this->errores->error(mensaje: 'Error al maquetar key_selects',data:  $keys_selects);
+        $keys_selects = $this->key_selects_txt(keys_selects: $keys_selects);
+        if (errores::$error) {
+            return $this->retorno_error(mensaje: 'Error al inicializar selects', data: $keys_selects, header: $header,
+                ws: $ws);
         }
 
         $base = $this->base_upd(keys_selects: $keys_selects, params: array(),params_ajustados: array());
@@ -133,35 +115,34 @@ class controlador_cva_lista_precio extends _ctl_base {
             return $this->retorno_error(mensaje: 'Error al integrar base',data:  $base, header: $header,ws:  $ws);
         }
 
-        $fecha = $this->html->input_fecha(cols: 4,row_upd:  $this->row_upd,value_vacio:  false,
-            value: $this->row_upd->fecha);
-        if(errores::$error){
-            return $this->retorno_error(
-                mensaje: 'Error al obtener input fecha',data:  $fecha, header: $header,ws:  $ws);
-        }
-
-        $this->inputs->fecha = $fecha;
-
         return $r_modifica;
     }
 
-    /**
-     * Inicializa los elementos mostrables para datatables
-     * @return stdClass
-     */
-    private function init_datatable(): stdClass
+    private function init_configuraciones(): controler
     {
-        $columns["inm_costo_id"]["titulo"] = "Id";
-        $columns["inm_costo_descripcion"]["titulo"] = "Descr";
-        $columns["inm_tipo_concepto_descripcion"]["titulo"] = "Tipo Concepto";
-        $columns["inm_concepto_descripcion"]["titulo"] = "Concepto";
-        $columns["inm_costo_fecha"]["titulo"] = "Fecha";
-        $columns["inm_costo_monto"]["titulo"] = "Monto";
-        $columns["inm_costo_referencia"]["titulo"] = "Ref";
+        $this->seccion_titulo = 'Lista Precio';
+        $this->titulo_lista = 'Registro de Lista Precio';
+
+        $this->lista_get_data = true;
+
+        return $this;
+    }
+
+    protected function init_datatable(): stdClass
+    {
+        $columns["cva_lista_precio_id"]["titulo"] = "Id";
+        $columns["cva_lista_precio_descripcion"]["titulo"] = "Descr";
+        $columns["cva_lista_precio_clave"]["titulo"] = "Clave";
+        $columns["cva_lista_precio_codigo"]["titulo"] = "Codigo";
+        $columns["cva_lista_precio_grupo"]["titulo"] = "Grupo";
+        $columns["cva_lista_precio_marca"]["titulo"] = "Marca";
+        $columns["cva_lista_precio_total_registros"]["titulo"] = "Total Registros";
+        $columns["cva_lista_precio_registro_actual"]["titulo"] = "Registro Actual";
 
 
-        $filtro = array("inm_costo.id","inm_costo.descripcion",'inm_tipo_concepto.descripcion',
-            'inm_concepto.descripcion','inm_costo.fecha','inm_costo.monto','inm_costo.referencia');
+        $filtro = array("cva_lista_precio.id","cva_lista_precio.descripcion",'cva_lista_precio.clave',
+            'cva_lista_precio.codigo','cva_lista_precio.grupo','cva_lista_precio.marca',
+            'cva_lista_precio.total_registros','cva_lista_precio.registro_actual');
 
         $datatables = new stdClass();
         $datatables->columns = $columns;
@@ -173,28 +154,41 @@ class controlador_cva_lista_precio extends _ctl_base {
     protected function key_selects_txt(array $keys_selects): array
     {
 
-
         $keys_selects = (new init())->key_select_txt(cols: 12,key: 'descripcion',
             keys_selects:$keys_selects, place_holder: 'Descripcion');
         if(errores::$error){
             return $this->errores->error(mensaje: 'Error al maquetar key_selects',data:  $keys_selects);
         }
-        $keys_selects = (new init())->key_select_txt(cols: 4,key: 'monto',
-            keys_selects:$keys_selects, place_holder: 'Monto');
+        $keys_selects = (new init())->key_select_txt(cols: 6,key: 'total_registros',
+            keys_selects:$keys_selects, place_holder: 'Total Registros');
         if(errores::$error){
             return $this->errores->error(mensaje: 'Error al maquetar key_selects',data:  $keys_selects);
         }
-        $keys_selects = (new init())->key_select_txt(cols: 12,key: 'fecha',
-            keys_selects:$keys_selects, place_holder: 'Fecha');
+        $keys_selects = (new init())->key_select_txt(cols: 6,key: 'registro_actual',
+            keys_selects:$keys_selects, place_holder: 'Registro Actual');
         if(errores::$error){
             return $this->errores->error(mensaje: 'Error al maquetar key_selects',data:  $keys_selects);
         }
-        $keys_selects = (new init())->key_select_txt(cols: 4,key: 'referencia',
-            keys_selects:$keys_selects, place_holder: 'Ref');
+        $keys_selects = (new init())->key_select_txt(cols: 6,key: 'codigo',
+            keys_selects:$keys_selects, place_holder: 'Codigo');
         if(errores::$error){
             return $this->errores->error(mensaje: 'Error al maquetar key_selects',data:  $keys_selects);
         }
-
+        $keys_selects = (new init())->key_select_txt(cols: 6,key: 'clave',
+            keys_selects:$keys_selects, place_holder: 'Clave');
+        if(errores::$error){
+            return $this->errores->error(mensaje: 'Error al maquetar key_selects',data:  $keys_selects);
+        }
+        $keys_selects = (new init())->key_select_txt(cols: 6,key: 'grupo',
+            keys_selects:$keys_selects, place_holder: 'Grupo');
+        if(errores::$error){
+            return $this->errores->error(mensaje: 'Error al maquetar key_selects',data:  $keys_selects);
+        }
+        $keys_selects = (new init())->key_select_txt(cols: 6,key: 'marca',
+            keys_selects:$keys_selects, place_holder: 'Marca');
+        if(errores::$error){
+            return $this->errores->error(mensaje: 'Error al maquetar key_selects',data:  $keys_selects);
+        }
 
         return $keys_selects;
     }
