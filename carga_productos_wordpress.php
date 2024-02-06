@@ -16,7 +16,7 @@ $woocommerce = new Client(
     $url_API_woo,
     $ck_API_woo,
     $cs_API_woo,
-    ['version' => 'wc/v3']
+    ['version' => 'wc/v3', 'timeout' => 30]
 );
 
 $con = new conexion();
@@ -28,7 +28,9 @@ $_SESSION['session_id'] = mt_rand(10000000,99999999);
 $_GET['session_id'] = $_SESSION['session_id'];
 
 $xmlArr = $cva_lista_precio_modelo->genera_arreglo_bruto(cliente_cva: $generales->cliente_cva,
-    url_cva: $generales->url_cva,marca: 'HP');
+    url_cva: $generales->url_cva,
+    clave: 'MS-1524');
+    //marca: 'HP');
 if(errores::$error){
     $error = (new errores())->error(mensaje: 'Error',data:  $xmlArr);
     print_r($error);

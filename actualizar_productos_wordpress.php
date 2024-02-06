@@ -16,7 +16,7 @@ $woocommerce = new Client(
     $url_API_woo,
     $ck_API_woo,
     $cs_API_woo,
-    ['version' => 'wc/v3']
+    ['version' => 'wc/v3', 'timeout' => 30]
 );
 
 $con = new conexion();
@@ -35,47 +35,52 @@ if(errores::$error){
     exit;
 }
 
-$registros = $xmlArr['item'];
+if(isset($xmlArr['item'])) {
+    $registros = $xmlArr['item'];
 
-if(!isset($xmlArr['item'][0])) {
-    $temp[] = $xmlArr['item'];
-    $registros = $temp;
-}
+    if (!isset($xmlArr['item'][0])) {
+        $temp[] = $xmlArr['item'];
+        $registros = $temp;
+    }
 
-$param_sku ='';
-foreach ($registros as $item){
-    $param_sku .= $item['clave'] . ',';
-}
+    $param_sku = '';
+    foreach ($registros as $item) {
+        $param_sku .= $item['clave'] . ',';
+    }
 
-$products = $woocommerce->get('products/?sku='. $param_sku);
+    $products = $woocommerce->get('products/?sku=' . $param_sku);
 
-$item_data = [];
-foreach($products as $product){
+    $item_data = [];
+    foreach ($products as $product) {
 
-    $sku = $product->sku;
-    $search_item = array_filter($registros, function($item) use($sku) {
-        return $item['clave'] == $sku;
-    });
+        $sku = $product->sku;
+        $search_item = array_filter($registros, function ($item) use ($sku) {
+            return $item['clave'] == $sku;
+        });
 
-    $search_item = reset($search_item);
+        $search_item = reset($search_item);
 
-    $item_data[] = [
-        'id' => $product->id,
-        'regular_price' => $search_item['precio'],
-        'stock_quantity' => $search_item['disponible'],
-        'images' => array('src'=>$search_item['imagen'])
+        $item_data[] = [
+            'id' => $product->id,
+            'regular_price' => $search_item['precio'],
+            'stock_quantity' => $search_item['disponible'],
+            'images' => array('src' => $search_item['imagen'])
+        ];
+    }
+
+    $data = [
+        'update' => $item_data,
     ];
+print_r($data);Exit;
+    echo "Actualización en lote ... \n";
+    $result = $woocommerce->post('products/batch', $data);
+
+    if (!$result) {
+        echo("Error al actualizar productos \n");
+    } else {
+        print("Productos actualizados correctamente \n");
+    }
 }
 
-$data = [
-    'update' => $item_data,
-];
-
-echo "Actualización en lote ... \n";
-$result = $woocommerce->post('products/batch', $data);
-
-if (!$result) {
-    echo("Error al actualizar productos \n");
-} else {
-    print("Productos actualizados correctamente \n");
-}
+echo "No hay productos que actualizar o no REST API de CVA no funciona";
+exit;

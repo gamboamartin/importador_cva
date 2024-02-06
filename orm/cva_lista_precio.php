@@ -33,7 +33,7 @@ class cva_lista_precio extends _modelo_parent{
         }
 
         $xmlArr = array();
-        if(trim($archivo_xml) !== '') {
+        if(trim($archivo_xml) !== '' && trim($archivo_xml) !== '</articulos>') {
             $xml = simplexml_load_string($archivo_xml);
             $json = json_encode($xml);
             $xmlArr = json_decode($json, true);

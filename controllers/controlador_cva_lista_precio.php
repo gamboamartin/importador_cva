@@ -10,11 +10,9 @@ namespace gamboamartin\importador_cva\controllers;
 
 use base\controller\controler;
 use base\controller\init;
-use config\generales;
 use gamboamartin\errores\errores;
 use gamboamartin\importador_cva\html\cva_lista_precio_html;
 use gamboamartin\importador_cva\models\cva_lista_precio;
-use gamboamartin\plugins\exportador;
 use gamboamartin\system\_ctl_base;
 use gamboamartin\system\links_menu;
 use gamboamartin\template\html;
@@ -78,12 +76,13 @@ class controlador_cva_lista_precio extends _ctl_base {
     {
         $keys = new stdClass();
         $keys->inputs = array('descripcion','total_registros','registro_actual','codigo','clave','grupo','marca');
+        $keys->telefonos = array();
+        $keys->fechas = array();
         $keys->selects = array();
 
         $init_data = array();
 
         $campos_view = $this->campos_view_base(init_data: $init_data,keys:  $keys);
-
         if(errores::$error){
             return $this->errores->error(mensaje: 'Error al inicializar campo view',data:  $campos_view);
         }
@@ -92,7 +91,15 @@ class controlador_cva_lista_precio extends _ctl_base {
         return $campos_view;
     }
 
+    private function init_configuraciones(): controler
+    {
+        $this->seccion_titulo = 'Lista Precio';
+        $this->titulo_lista = 'Registro de Lista Precio';
 
+        $this->lista_get_data = true;
+
+        return $this;
+    }
 
     public function modifica(bool $header, bool $ws = false): array|stdClass
     {
@@ -118,15 +125,6 @@ class controlador_cva_lista_precio extends _ctl_base {
         return $r_modifica;
     }
 
-    private function init_configuraciones(): controler
-    {
-        $this->seccion_titulo = 'Lista Precio';
-        $this->titulo_lista = 'Registro de Lista Precio';
-
-        $this->lista_get_data = true;
-
-        return $this;
-    }
 
     protected function init_datatable(): stdClass
     {
@@ -140,9 +138,7 @@ class controlador_cva_lista_precio extends _ctl_base {
         $columns["cva_lista_precio_registro_actual"]["titulo"] = "Registro Actual";
 
 
-        $filtro = array("cva_lista_precio.id","cva_lista_precio.descripcion",'cva_lista_precio.clave',
-            'cva_lista_precio.codigo','cva_lista_precio.grupo','cva_lista_precio.marca',
-            'cva_lista_precio.total_registros','cva_lista_precio.registro_actual');
+        $filtro = array("cva_lista_precio.id");
 
         $datatables = new stdClass();
         $datatables->columns = $columns;
