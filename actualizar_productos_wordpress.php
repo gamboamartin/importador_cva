@@ -71,7 +71,7 @@ if(isset($xmlArr['item'])) {
     $data = [
         'update' => $item_data,
     ];
-print_r($data);Exit;
+
     echo "Actualización en lote ... \n";
     $result = $woocommerce->post('products/batch', $data);
 

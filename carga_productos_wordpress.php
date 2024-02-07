@@ -28,8 +28,7 @@ $_SESSION['session_id'] = mt_rand(10000000,99999999);
 $_GET['session_id'] = $_SESSION['session_id'];
 
 $xmlArr = $cva_lista_precio_modelo->genera_arreglo_bruto(cliente_cva: $generales->cliente_cva,
-    url_cva: $generales->url_cva,
-    clave: 'MS-1524');
+    url_cva: $generales->url_cva);
     //marca: 'HP');
 if(errores::$error){
     $error = (new errores())->error(mensaje: 'Error',data:  $xmlArr);
@@ -70,12 +69,10 @@ foreach ($registros as $item) {
             'sku' => $item['clave'],
             'name' => $item['descripcion'],
             'type' => 'simple',
-            'regular_price' => $item['precio'],
             'virtual' => true,
             'downloadable' => false,
             'downloads' => array(),
             'categories' => array(0=>$item['grupo']),
-            'stock_quantity' => $item['disponible'],
             'images' => array('src'=>$item['imagen'])
         ];
     }
